@@ -83,7 +83,28 @@ fn main() {
     println!(
         "sum of game Ids: {}",
         possible_games.map(|g| g.id).sum::<u32>()
-    )
+    );
+    let game_powers = _all_games.iter().map(|game| {
+        min_power(&game.draws, "blue")
+            * min_power(&game.draws, "red")
+            * min_power(&game.draws, "green")
+    });
+
+    println!("sum of game powers: {}", game_powers.sum::<i32>());
 }
 
+fn min_power(draws: &Vec<Vec<(i32, &str)>>, color: &str) -> i32 {
+    return draws.iter().fold(0, |acc, val| {
+        std::cmp::max(
+            acc,
+            val.iter()
+                .filter(|(_x, s)| s.contains(color))
+                .collect::<Vec<_>>()
+                .first()
+                .unwrap_or(&&(0, color))
+                .0,
+        )
+    });
+}
 // solution part 01 3059
+// solution part 02 65371
