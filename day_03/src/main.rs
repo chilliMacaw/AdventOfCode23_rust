@@ -1,8 +1,7 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
-
-use std::collections::HashMap;
 
 fn input_lines() -> Result<Vec<String>, std::io::Error> {
     let f = File::open("src/input.txt")?;
@@ -13,10 +12,8 @@ fn input_lines() -> Result<Vec<String>, std::io::Error> {
         result.push(".".to_owned() + &line? + ".")
     }
     result.push("...............................................................................................................................................".to_string());
-
     return Result::Ok(result);
 }
-
 fn check_environment(
     h_map: HashMap<(usize, usize), char>,
     env: ((usize, usize), (usize, usize)),
@@ -116,7 +113,6 @@ fn main() {
             None => {}
         }
     }
-
     println!("part 02* {:?}", sum_two)
 }
 
