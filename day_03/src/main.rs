@@ -89,10 +89,52 @@ fn main() {
         .sum::<i32>();
     println!("{:?}", sum);
 
-    part_two();
+    // part two
+
+    let mut numbers_near_gears = numbers_and_environemtns
+        .iter()
+        .map(|env| {
+            (
+                env.0,
+                check_environment_for_gears(symbol_lookup_table_by_position.clone(), env.1),
+            )
+        })
+        .filter(|res| res.1 .0)
+        .map(|(num, is)| (num, is.1))
+        .collect::<Vec<_>>();
+    let mut sum_two = 0;
+    while !numbers_near_gears.is_empty() {
+        let curr = numbers_near_gears.pop().unwrap();
+        let index = numbers_near_gears
+            .iter()
+            .position(|elem| curr.1.eq(&elem.1));
+        match index {
+            Some(x) => {
+                let other = numbers_near_gears.remove(x);
+                sum_two += curr.0 * other.0;
+            }
+            None => {}
+        }
+    }
+
+    println!("part 02* {:?}", sum_two)
 }
 
-fn part_two() {}
+fn check_environment_for_gears(
+    h_map: HashMap<(usize, usize), char>,
+    env: ((usize, usize), (usize, usize)),
+) -> (bool, (usize, usize)) {
+    for i in env.0 .0..=env.1 .0 {
+        for k in env.0 .1..=env.1 .1 {
+            match h_map.get(&(i, k)) {
+                Some('*') => return (true, (i, k)),
+                _ => {}
+            }
+        }
+    }
+    (false, (0, 0))
+}
 
 // i padded the input file with a row of dots (.) as the last and first row, as well as left and right col, this makes handleing edge cases simpler (when scanning the environment)
 // 514969 part one
+// 78915902 part two
