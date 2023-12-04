@@ -27,9 +27,9 @@ fn winnings_in_card(card: &Card) -> u32 {
         .collect::<Vec<_>>();
     let mut result = 1;
     match intersection.pop() {
-        Some(_) => intersection.iter().for_each(|_| {
-            result = result * 2;
-        }),
+        Some(_) => {
+            result = 2_u32.pow(intersection.len().try_into().unwrap());
+        }
         None => return 0,
     }
     return result;
