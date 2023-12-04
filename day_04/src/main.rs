@@ -101,7 +101,7 @@ fn walk_the_scratch_cards(index: usize, cards: RefCell<Vec<(&Card, usize)>>) -> 
         for k in index + 1..(index + intersections + 1) {
             let mut cards_borrowed = cards.borrow_mut();
             let card = &mut cards_borrowed[k];
-            card.1 += 1 * curr_amt;
+            card.1 += curr_amt;
         }
         return walk_the_scratch_cards(index + 1, cards) + curr_amt;
     }
