@@ -4,7 +4,6 @@ use std::collections::HashSet;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
-use std::rc::Rc;
 
 fn input_lines() -> Result<Vec<String>, std::io::Error> {
     let f = File::open("src/input.txt")?;
@@ -23,8 +22,8 @@ fn main() {
 
 fn winnings_in_card(card: &Card) -> u32 {
     let mut intersection = card
-        .winning_numbers
-        .intersection(&card.my_numbers)
+        .winning_set
+        .intersection(&card.mynum_set)
         .collect::<Vec<_>>();
     let mut result = 1;
     match intersection.pop() {
@@ -39,53 +38,61 @@ fn winnings_in_card(card: &Card) -> u32 {
 #[derive(Debug)]
 struct Card {
     id: usize,
-    winning_numbers: HashSet<u32>,
-    my_numbers: HashSet<u32>,
+    winning_set: HashSet<u32>,
+    mynum_set: HashSet<u32>,
 }
 
 fn part_one() {
     let re = Regex::new(r"\d+").unwrap();
     let mut cards: Vec<Card> = Vec::new();
     for (i, line) in input_lines().expect("no input").iter().enumerate() {
-        let tmp = line
+        let scrachcard_numbers = line
             .split(":")
             .last()
             .expect("no numbers")
             .split("|")
             .collect::<Vec<&str>>();
-        let winners_tmp = tmp.first().expect("no winning numbers in input");
-        let my_numbers_tmp = tmp.last().expect("no my numbers in input");
-        let winning_numbers: HashSet<u32> = re
-            .find_iter(&winners_tmp)
+
+        let winning_numbers = scrachcard_numbers
+            .first()
+            .expect("no winning numbers in input");
+
+        let my_numbers = scrachcard_numbers.last().expect("no my numbers in input");
+
+        let winning_set: HashSet<u32> = re
+            .find_iter(&winning_numbers)
             .map(|m| m.as_str().parse::<u32>().unwrap())
             .collect();
-        let my_numbers: HashSet<u32> = re
-            .find_iter(&my_numbers_tmp)
+
+        let mynum_set: HashSet<u32> = re
+            .find_iter(&my_numbers)
             .map(|m| m.as_str().parse::<u32>().unwrap())
             .collect();
+
         cards.push(Card {
             id: i,
-            winning_numbers,
-            my_numbers,
+            winning_set,
+            mynum_set,
         });
     }
-    //println!("Cards: {:?}", cards);
+
     let sum = cards
         .iter()
         .map(|card| winnings_in_card(&card))
         .sum::<u32>();
+
     println!("part 01 solution: {:?}", sum);
 }
 
 fn intersections_in_card(card: &Card) -> usize {
     let intersection = card
-        .winning_numbers
-        .intersection(&card.my_numbers)
+        .winning_set
+        .intersection(&card.mynum_set)
         .collect::<Vec<_>>();
     return intersection.len();
 }
 
-fn walk_the_scratch_cards(index: usize, cards: Rc<RefCell<Vec<(&Card, usize)>>>) -> usize {
+fn walk_the_scratch_cards(index: usize, cards: RefCell<Vec<(&Card, usize)>>) -> usize {
     if index == cards.borrow().len() - 1 {
         return cards.borrow()[index].1;
     } else {
@@ -96,7 +103,6 @@ fn walk_the_scratch_cards(index: usize, cards: Rc<RefCell<Vec<(&Card, usize)>>>)
             let card = &mut cards_borrowed[k];
             card.1 += 1 * curr_amt;
         }
-        //println!("{:?}", cards);
         return walk_the_scratch_cards(index + 1, cards) + curr_amt;
     }
 }
@@ -105,38 +111,40 @@ fn part_two() {
     let re = Regex::new(r"\d+").unwrap();
     let mut cards: Vec<Card> = Vec::new();
     for (i, line) in input_lines().expect("no input").iter().enumerate() {
-        let tmp = line
+        let scrachcard_numbers = line
             .split(":")
             .last()
             .expect("no numbers")
             .split("|")
             .collect::<Vec<&str>>();
-        let winners_tmp = tmp.first().expect("no winning numbers in input");
-        let my_numbers_tmp = tmp.last().expect("no my numbers in input");
+        let winning_numbers = scrachcard_numbers
+            .first()
+            .expect("no winning numbers in input");
+        let my_numbers = scrachcard_numbers.last().expect("no my numbers in input");
 
-        let winning_numbers: HashSet<u32> = re
-            .find_iter(&winners_tmp)
+        let winning_set: HashSet<u32> = re
+            .find_iter(&winning_numbers)
             .map(|m| m.as_str().parse::<u32>().unwrap())
             .collect();
-        let my_numbers: HashSet<u32> = re
-            .find_iter(&my_numbers_tmp)
+        let mynum_set: HashSet<u32> = re
+            .find_iter(&my_numbers)
             .map(|m| m.as_str().parse::<u32>().unwrap())
             .collect();
         cards.push(Card {
             id: i,
-            winning_numbers,
-            my_numbers,
+            winning_set,
+            mynum_set,
         });
     }
-    let x = Rc::new(RefCell::new(
+
+    let ref_to_cards = RefCell::new(
         cards
             .iter()
             .map(|val| (val, 1 as usize))
             .to_owned()
             .collect::<Vec<(&Card, usize)>>(),
-    ));
+    );
 
-    let result = walk_the_scratch_cards(0, x.clone());
-    //println!("{:?}", x);
+    let result = walk_the_scratch_cards(0, ref_to_cards);
     println!("solution part 02: {:?}", result);
 }
