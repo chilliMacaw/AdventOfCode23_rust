@@ -361,5 +361,6 @@ fn part_two() {
     }
     println!("minimum loation part 02: {}", min_location)
 }
-// solution to part 02  15880236 took 40 minutes to compute without rust optimizations
+//solution to part 02  15880236 took 40 minutes to compute without rust optimizations
+//With release optimizations, it ran in 2 min 13 seconds.
 // solution to part 01: 621354867
