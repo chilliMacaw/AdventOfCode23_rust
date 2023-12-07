@@ -47,41 +47,6 @@ enum Combo {
 fn map_to_combo(cards: [Card; 5]) -> Combo {
     let mut count_map: HashMap<Card, i8> = HashMap::new();
     for card in cards {
-        // for part 02
-        match card {
-            Card::Jack => {
-                if count_map.get(&Card::Jack) == None {
-                    count_map.insert(Card::Jack, 0);
-                }
-                for card_other in [
-                    Card::Two,
-                    Card::Three,
-                    Card::Four,
-                    Card::Five,
-                    Card::Six,
-                    Card::Seven,
-                    Card::Eight,
-                    Card::Nine,
-                    Card::Ten,
-                    Card::Jack,
-                    Card::Queen,
-                    Card::King,
-                    Card::Ace,
-                ] {
-                    count_map.entry(card_other).and_modify(|e| *e += 1);
-                }
-            }
-            _ => match count_map.get(&card) {
-                Some(_) => {
-                    count_map.entry(card).and_modify(|e| *e += 1);
-                }
-                None => {
-                    count_map.insert(card, 1);
-                }
-            },
-        };
-
-        /*  for part 01
         count_map.insert(
             card,
             match count_map.get(&card) {
@@ -89,13 +54,33 @@ fn map_to_combo(cards: [Card; 5]) -> Combo {
                 None => 1,
             },
         );
-        */
     }
+    // for part 02
+    let jacks = count_map.get(&Card::Jack).copied();
+    match jacks {
+        Some(x) => {
+            let max = count_map
+                .iter()
+                .filter(|c| c.0 != &Card::Jack)
+                .max_by(|a, b| a.1.cmp(b.1));
+            match max {
+                Some((card, v)) => {
+                    count_map.entry(*card).and_modify(|e| *e += x);
+                }
+                None => {}
+            }
+        }
+        None => {}
+    }
+
     if count_map.iter().any(|(k, v)| *v == 5) {
         return Combo::FiveOfAKind;
     } else if count_map.iter().any(|(k, v)| *v == 4) {
         return Combo::FourOfAKind;
-    } else if count_map.iter().any(|(k, v)| *v == 3) && count_map.iter().any(|(k, v)| *v == 2) {
+    } else if count_map.iter().any(|(k, v)| *v == 3)
+        && count_map.iter().any(|(k, v)| *v == 2 && *k != Card::Jack)
+    // && is for part 02 and for an edge case where Jack will otherwise be counted twice and TWo Jacks will be full House.
+    {
         return Combo::FullHouse;
     } else if count_map.iter().any(|(k, v)| *v == 3) {
         return Combo::ThreeOfAKind;
@@ -139,6 +124,7 @@ impl Ord for Bet {
                     return s_card.cmp(&o_card);
                 }
             }
+            println!("asdfas");
             return Ordering::Greater;
         }
         s.cmp(&o)
@@ -196,28 +182,9 @@ fn parser() -> Vec<Bet> {
     bets
 }
 
-fn part_two() {
+fn part_two() -> i64 {
     let mut bets: Vec<Bet> = parser();
-    /*
-    edge case only in part two
-    if all cards are Jockers they need to be counted as Ace
-    but should still be below [Ace,Jack,Jack,Jack,Jack]
-
-    my work around only works for my input might not  work for other inputs
-    */
-    let mut fixed_bets = bets
-        .iter()
-        .map(|bet: &Bet| match bet.cards {
-            [Card::Jack, Card::Jack, Card::Jack, Card::Jack, Card::Jack] => Bet::new(
-                [Card::Ace, Card::Jack, Card::Jack, Card::Jack, Card::Jack],
-                bet.wager,
-            ),
-            _ => Bet::new(bet.cards, bet.wager),
-        })
-        .collect::<Vec<Bet>>();
-    // edge case end
     bets.sort();
-    fixed_bets.sort();
 
     println!("{:?}", bets);
     let sum: i64 = bets
@@ -226,9 +193,18 @@ fn part_two() {
         .map(|(i, bet)| (i as i64 + 1) * bet.wager as i64)
         .sum();
 
-    println!("solution part 02: {} ", sum)
+    println!("solution part 02: {} ", sum);
+    sum
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_solve_b() {
+        assert_eq!(part_two(), 6839);
+    }
+}
+
 // solution part 01 256448566
-// solution part 02
-// not 254879567
-//not 254884465
+// solution part 02 254412181
