@@ -19,6 +19,7 @@ fn input_lines() -> Result<Vec<String>, std::io::Error> {
 }
 #[derive(PartialOrd, Ord, PartialEq, Eq, Debug, Clone, Copy, Hash)]
 enum Card {
+    Not,
     Two,
     Three,
     Four,
@@ -63,7 +64,13 @@ fn map_to_combo(cards: [Card; 5]) -> Combo {
         return Combo::FullHouse;
     } else if count_map.iter().any(|(k, v)| *v == 3) {
         return Combo::ThreeOfAKind;
-    } else if count_map.iter().map(|(k, v)| *v == 2).len() == 2 {
+    } else if count_map
+        .iter()
+        .filter(|(k, v)| **v == 2)
+        .collect::<Vec<_>>()
+        .len()
+        == 2
+    {
         return Combo::TwoPair;
     } else if count_map.iter().any(|(k, v)| *v == 2) {
         return Combo::OnePair;
@@ -144,7 +151,7 @@ fn parser() -> Vec<Bet> {
                 '4' => Card::Four,
                 '3' => Card::Three,
                 '2' => Card::Two,
-                _ => Card::Two,
+                _ => Card::Not,
             })
             .collect::<Vec<Card>>();
         bets.push(Bet::new(
@@ -158,6 +165,12 @@ fn parser() -> Vec<Bet> {
 fn part_one() {
     let mut bets = parser();
     bets.sort();
+    let not = bets
+        .iter()
+        .filter(|bet| bet.cards.contains(&Card::Not))
+        .collect::<Vec<_>>()
+        .len();
+    //println!("not: {}", not);
     println!("{:?}", bets);
     let sum: i64 = bets
         .iter()
