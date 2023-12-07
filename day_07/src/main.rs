@@ -19,7 +19,7 @@ fn input_lines() -> Result<Vec<String>, std::io::Error> {
 }
 #[derive(PartialOrd, Ord, PartialEq, Eq, Debug, Clone, Copy, Hash)]
 enum Card {
-    Not,
+    Jack, // for part 02
     Two,
     Three,
     Four,
@@ -29,7 +29,6 @@ enum Card {
     Eight,
     Nine,
     Ten,
-    Jack,
     Queen,
     King,
     Ace,
@@ -48,6 +47,41 @@ enum Combo {
 fn map_to_combo(cards: [Card; 5]) -> Combo {
     let mut count_map: HashMap<Card, i8> = HashMap::new();
     for card in cards {
+        // for part 02
+        match card {
+            Card::Jack => {
+                if count_map.get(&Card::Jack) == None {
+                    count_map.insert(Card::Jack, 0);
+                }
+                for card_other in [
+                    Card::Two,
+                    Card::Three,
+                    Card::Four,
+                    Card::Five,
+                    Card::Six,
+                    Card::Seven,
+                    Card::Eight,
+                    Card::Nine,
+                    Card::Ten,
+                    Card::Jack,
+                    Card::Queen,
+                    Card::King,
+                    Card::Ace,
+                ] {
+                    count_map.entry(card_other).and_modify(|e| *e += 1);
+                }
+            }
+            _ => match count_map.get(&card) {
+                Some(_) => {
+                    count_map.entry(card).and_modify(|e| *e += 1);
+                }
+                None => {
+                    count_map.insert(card, 1);
+                }
+            },
+        };
+
+        /*  for part 01
         count_map.insert(
             card,
             match count_map.get(&card) {
@@ -55,6 +89,7 @@ fn map_to_combo(cards: [Card; 5]) -> Combo {
                 None => 1,
             },
         );
+        */
     }
     if count_map.iter().any(|(k, v)| *v == 5) {
         return Combo::FiveOfAKind;
@@ -124,7 +159,6 @@ impl PartialEq for Bet {
 impl Eq for Bet {}
 
 fn main() {
-    part_one();
     part_two();
 }
 
@@ -151,33 +185,47 @@ fn parser() -> Vec<Bet> {
                 '4' => Card::Four,
                 '3' => Card::Three,
                 '2' => Card::Two,
-                _ => Card::Not,
+                _ => Card::Two,
             })
             .collect::<Vec<Card>>();
         bets.push(Bet::new(
             [cards[0], cards[1], cards[2], cards[3], cards[4]],
-            second.parse::<i32>().expect("expected bett amount"),
+            second.parse::<i32>().expect("expected bet amount"),
         ));
     }
     bets
 }
 
-fn part_one() {
-    let mut bets = parser();
-    bets.sort();
-    let not = bets
+fn part_two() {
+    let mut bets: Vec<Bet> = parser();
+    /*
+    edge case only in part two
+    if all cards are Jockers they need to be counted as Ace
+    but should still be below [Ace,Jack,Jack,Jack,Jack]
+    */
+    let mut fixed_bets = bets
         .iter()
-        .filter(|bet| bet.cards.contains(&Card::Not))
-        .collect::<Vec<_>>()
-        .len();
-    //println!("not: {}", not);
-    println!("{:?}", bets);
-    let sum: i64 = bets
+        .map(|bet: &Bet| match bet.cards {
+            [Card::Jack, Card::Jack, Card::Jack, Card::Jack, Card::Jack] => Bet::new(
+                [Card::Ace, Card::Jack, Card::Jack, Card::Jack, Card::Jack],
+                bet.wager,
+            ),
+            _ => Bet::new(bet.cards, bet.wager),
+        })
+        .collect::<Vec<Bet>>();
+    // edge case end
+    bets.sort();
+    fixed_bets.sort();
+
+    println!("{:?}", fixed_bets);
+    let sum: i64 = fixed_bets
         .iter()
         .enumerate()
         .map(|(i, bet)| (i as i64 + 1) * bet.wager as i64)
         .sum();
 
-    println!("solution part 01: {} mit länge {}", sum, bets.len())
+    println!("solution part 02: {} ", sum)
 }
-fn part_two() {}
+// solution part 01 256448566
+// solution part 02
+// not 254879567
