@@ -202,6 +202,8 @@ fn part_two() {
     edge case only in part two
     if all cards are Jockers they need to be counted as Ace
     but should still be below [Ace,Jack,Jack,Jack,Jack]
+
+    my work around only works for my input might not  work for other inputs
     */
     let mut fixed_bets = bets
         .iter()
@@ -217,8 +219,8 @@ fn part_two() {
     bets.sort();
     fixed_bets.sort();
 
-    println!("{:?}", fixed_bets);
-    let sum: i64 = fixed_bets
+    println!("{:?}", bets);
+    let sum: i64 = bets
         .iter()
         .enumerate()
         .map(|(i, bet)| (i as i64 + 1) * bet.wager as i64)
@@ -229,3 +231,4 @@ fn part_two() {
 // solution part 01 256448566
 // solution part 02
 // not 254879567
+//not 254884465
