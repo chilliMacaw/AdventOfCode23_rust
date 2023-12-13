@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use std::{collections::HashMap, fs::read_to_string, result};
+use std::{collections::HashMap, fs::read_to_string};
 
 fn input_lines(path: &str) -> Vec<String> {
     read_to_string(path)
